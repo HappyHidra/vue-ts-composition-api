@@ -5,34 +5,24 @@ import GameWrongLetters from '@/components/GameWrongLetters.vue'
 import GameWord from '@/components/GameWord.vue'
 import GamePopup from '@/components/GamePopup.vue'
 import GameNotification from '@/components/GameNotification.vue'
-import { computed, onBeforeMount, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
+import { useRandomWord } from '@/composables/useRandomWord'
+import { useLetters } from '@/composables/useLetters'
+import { useNotification } from '@/composables/useNotification'
 
-const word = ref('')
+const { word, getWord } = useRandomWord()
+const {
+  letters,
+  correctLetters,
+  wrongLetters,
+  userLose,
+  userWin,
+  wrongLettersCounter,
+  addLetter,
+  resetLetters
+} = useLetters(word)
 
-const getWord = () =>
-  fetch('https://api.randomdatatools.ru/?unescaped=false&params=FirstName').then((resp) =>
-    resp
-      .json()
-      .then((json) => {
-        word.value = json.FirstName.toLowerCase()
-        console.log(word.value)
-      })
-      .catch((error) => {
-        word.value = ''
-        console.log(error)
-      })
-  )
-getWord()
-
-const letters = ref<string[]>([])
-const correctLetters = computed(() => letters.value.filter((letter) => word.value.includes(letter)))
-const wrongLetters = computed(() => letters.value.filter((letter) => !word.value.includes(letter)))
-const wrongLettersCounter = computed(() => wrongLetters.value.length)
-const userWin = computed(() =>
-  [...word.value].every((letter) => correctLetters.value.includes(letter))
-)
-const userLose = computed(() => wrongLetters.value.length === 6)
-const notification = ref<InstanceType<typeof GameNotification> | null>(null)
+const { notification, showNotification } = useNotification()
 const popup = ref<InstanceType<typeof GamePopup> | null>(null)
 
 watch(wrongLetters, () => {
@@ -49,7 +39,7 @@ watch(correctLetters, () => {
 
 const restart = async () => {
   await getWord()
-  letters.value = []
+  resetLetters()
   popup.value?.close()
 }
 
@@ -58,13 +48,10 @@ window.addEventListener('keydown', ({ key }) => {
     return
   }
   if (letters.value.includes(key)) {
-    notification.value?.open()
-    setTimeout(() => notification.value?.close(), 2000)
+    showNotification()
     return
   }
-  if (key.match(/[а-яА-ЯёЁ]/)) {
-    letters.value.push(key.toLowerCase())
-  }
+  addLetter(key)
 })
 </script>
 

@@ -1,17 +1,21 @@
 <script setup lang="ts">
-// const props = defineProps(['word'])
+import { computed } from 'vue'
+
 interface Props {
   word: string
   correctLetters: string[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+const guessedLetters = computed(() =>
+  [...props.word].map((letter) => (props.correctLetters.includes(letter) ? letter : ''))
+)
 </script>
 
 <template>
   <div class="word">
-    <span v-for="(letter, index) in word" class="letter" :key="index">
-      {{ correctLetters.includes(letter) ? letter : '' }}
+    <span v-for="(letter, index) in guessedLetters" class="letter" :key="letter + index">
+      {{ letter }}
     </span>
   </div>
 </template>
