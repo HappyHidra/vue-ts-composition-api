@@ -1,4 +1,5 @@
-import { ref, computed, Ref } from 'vue'
+import { ref, computed } from 'vue'
+import { type Ref } from 'vue'
 
 export const useLetters = (word: Ref<string>) => {
   const letters = ref<string[]>([])
